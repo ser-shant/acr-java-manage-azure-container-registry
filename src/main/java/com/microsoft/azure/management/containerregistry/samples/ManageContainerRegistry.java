@@ -6,6 +6,7 @@
 
 package com.microsoft.azure.management.containerregistry.samples;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -13,6 +14,8 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.PushImageResultCallback;
+import com.microsoft.azure.AzureEnvironment;
+import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registry;
@@ -49,9 +52,9 @@ public class ManageContainerRegistry {
         final String rgName = SdkContext.randomResourceName("rgACR", 15);
         final String acrName = SdkContext.randomResourceName("acrsample", 20);
         final Region region = Region.US_EAST;
-        final String dockerImageName = "hello-world";
+        final String dockerImageName = "hotspotter/hotspotter-app";
         final String dockerImageTag = "latest";
-        final String dockerContainerName = "sample-hello";
+        final String dockerContainerName = "sample-hotspotter";
 
         try {
             //=============================================================
@@ -162,7 +165,7 @@ public class ManageContainerRegistry {
             System.out.println(f.getMessage());
             f.printStackTrace();
         } finally {
-            try {
+           /* try {
                 System.out.println("Deleting Resource Group: " + rgName);
                 azure.resourceGroups().beginDeleteByName(rgName);
                 System.out.println("Deleted Resource Group: " + rgName);
@@ -170,7 +173,7 @@ public class ManageContainerRegistry {
                 System.out.println("Did not create any resources in Azure. No clean up is necessary");
             } catch (Exception g) {
                 g.printStackTrace();
-            }
+            }*/
         }
         return false;
     }
@@ -184,13 +187,17 @@ public class ManageContainerRegistry {
         try {
             //=============================================================
             // Authenticate
+            ApplicationTokenCredentials credentials = new ApplicationTokenCredentials("145924fc-1170-4476-bef9-64453a9dbda7",
+                "a48a00b9-670c-4805-a3b2-37aec94d6eb6",
+                "e85899df458c4cb2957b21fb8055af3c",
+                AzureEnvironment.AZURE);
 
-            final File credFile = new File(System.getenv("AZURE_AUTH_LOCATION"));
+            final File credFile = new File("my.azureauth");
 
             Azure azure = Azure.configure()
-                    .withLogLevel(LogLevel.BODY)
-                    .authenticate(credFile)
-                    .withDefaultSubscription();
+                .withLogLevel(LogLevel.BODY)
+                .authenticate(credFile)
+                .withDefaultSubscription();
 
             // Print selected subscription
             System.out.println("Selected subscription: " + azure.subscriptionId());
